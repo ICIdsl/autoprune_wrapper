@@ -1,0 +1,3 @@
+[submodule "autoprune"]
+	path = autoprune
+	url = git@github.com:adityarajagopal/autoprune.git
