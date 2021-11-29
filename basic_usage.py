@@ -14,12 +14,12 @@ import autoprune
 
 def prune(pl, network):
     model, convsToIgnore= utils.getModelAndIgnoredConvs(network)
-    prunedModel, channelsKept = autoprune.pruneNetwork(pl, model,\
+    prunedModel, channelsKept = autoprune.pruneNetwork(pl, model, network,\
                                                        rankingType= 'l1-norm',\
                                                        ignoreKws=convsToIgnore)
-    print(prunedModel)
-    print(f"Original model size= {utils.modelSize(model)} MB")
-    print(f"Pruned model size= {utils.modelSize(prunedModel)} MB")
+    # print(prunedModel)
+    # print(f"Original model size= {utils.modelSize(model)} MB")
+    # print(f"Pruned model size= {utils.modelSize(prunedModel)} MB")
 
 parser= argparse.ArgumentParser()
 parser.add_argument('--pl', help='pruning level')
