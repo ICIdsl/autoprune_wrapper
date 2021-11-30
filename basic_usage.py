@@ -18,8 +18,10 @@ def prune(pl, network):
                                          rankingType= 'l1-norm',\
                                          ignoreKws=convsToIgnore)
     print(prunedModel)
-    print(f"Original model size= {utils.modelSize(model)} MB")
-    print(f"Pruned model size= {utils.modelSize(prunedModel)} MB")
+    uModelSize= utils.modelSize(model)
+    pModelSize= utils.modelSize(prunedModel)
+    print(f"Original model size= {uModelSize} MB")
+    print(f"Pruned model size= {pModelSize} MB ({pModelSize/uModelSize:.2f}%)")
 
 parser= argparse.ArgumentParser()
 parser.add_argument('--pl', help='pruning level')

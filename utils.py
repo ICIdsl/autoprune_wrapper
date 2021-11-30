@@ -1,3 +1,4 @@
+import torchvision
 import numpy as np
 
 def getModelAndIgnoredConvs(name):
@@ -17,6 +18,12 @@ def getModelAndIgnoredConvs(name):
     elif name == 'mnasnet':
         from models.mnasnet import mnasnet
         return mnasnet(1000, pretrained=True), ['is::layers.0', 'is::layers.3', 'is::layers.6']
+    elif name == 'squeezenet':
+        from models.squeezenet import squeezenet
+        return squeezenet(1000, pretrained=True), ['is::features.0']
+    elif name == 'googlenet':
+        from models.googlenet_noaux import googlenet 
+        return googlenet(pretrained=False), ['is::conv1.conv', 'is::conv2.conv', 'is::conv3.conv']
     else:
         raise NotImplementedError(f"Loading for network {name} not implemented.")
 

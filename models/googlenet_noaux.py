@@ -58,7 +58,6 @@ def googlenet(pretrained=False, progress=True, **kwargs):
 
     return GoogLeNet(**kwargs)
 
-
 class GoogLeNet(nn.Module):
     __constants__ = ['aux_logits', 'transform_input']
 
@@ -66,19 +65,15 @@ class GoogLeNet(nn.Module):
                  blocks=None):
         super(GoogLeNet, self).__init__()
         if blocks is None:
-            blocks = [BasicConv2d, Inception, InceptionAux]
+            blocks = [BasicConv2d, Inception]
         if init_weights is None:
             warnings.warn('The default weight initialization of GoogleNet will be changed in future releases of '
                           'torchvision. If you wish to keep the old behavior (which leads to long initialization times'
                           ' due to scipy/scipy#11299), please set init_weights=True.', FutureWarning)
             init_weights = True
-        assert len(blocks) == 3
+        assert len(blocks) == 2
         conv_block = blocks[0]
         inception_block = blocks[1]
-        inception_aux_block = blocks[2]
-
-        self.aux_logits = aux_logits
-        self.transform_input = transform_input
 
         self.conv1 = conv_block(3, 64, kernel_size=7, stride=2, padding=3)
         self.maxpool1 = nn.MaxPool2d(3, stride=2, ceil_mode=True)
@@ -99,13 +94,6 @@ class GoogLeNet(nn.Module):
 
         self.inception5a = inception_block(832, 256, 160, 320, 32, 128, 128)
         self.inception5b = inception_block(832, 384, 192, 384, 48, 128, 128)
-
-        if aux_logits:
-            self.aux1 = inception_aux_block(512, num_classes)
-            self.aux2 = inception_aux_block(528, num_classes)
-        else:
-            self.aux1 = None
-            self.aux2 = None
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.dropout = nn.Dropout(0.2)
@@ -136,7 +124,7 @@ class GoogLeNet(nn.Module):
             x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
         return x
 
-    def _forward(self, x):
+    def forward(self, x):
         # type: (Tensor) -> Tuple[Tensor, Optional[Tensor], Optional[Tensor]]
         # N x 3 x 224 x 224
         x = self.conv1(x)
@@ -158,22 +146,12 @@ class GoogLeNet(nn.Module):
         # N x 480 x 14 x 14
         x = self.inception4a(x)
         # N x 512 x 14 x 14
-        aux1 = torch.jit.annotate(Optional[Tensor], None)
-        if self.aux1 is not None:
-            if self.training:
-                aux1 = self.aux1(x)
-
         x = self.inception4b(x)
         # N x 512 x 14 x 14
         x = self.inception4c(x)
         # N x 512 x 14 x 14
         x = self.inception4d(x)
         # N x 528 x 14 x 14
-        aux2 = torch.jit.annotate(Optional[Tensor], None)
-        if self.aux2 is not None:
-            if self.training:
-                aux2 = self.aux2(x)
-
         x = self.inception4e(x)
         # N x 832 x 14 x 14
         x = self.maxpool4(x)
@@ -190,28 +168,7 @@ class GoogLeNet(nn.Module):
         x = self.dropout(x)
         x = self.fc(x)
         # N x 1000 (num_classes)
-        return x, aux2, aux1
-
-    @torch.jit.unused
-    def eager_outputs(self, x, aux2, aux1):
-        # type: (Tensor, Optional[Tensor], Optional[Tensor]) -> GoogLeNetOutputs
-        if self.training and self.aux_logits:
-            return _GoogLeNetOutputs(x, aux2, aux1)
-        else:
-            return x
-
-    def forward(self, x):
-        # type: (Tensor) -> GoogLeNetOutputs
-        x = self._transform_input(x)
-        x, aux1, aux2 = self._forward(x)
-        aux_defined = self.training and self.aux_logits
-        if torch.jit.is_scripting():
-            if not aux_defined:
-                warnings.warn("Scripted GoogleNet always returns GoogleNetOutputs Tuple")
-            return GoogLeNetOutputs(x, aux2, aux1)
-        else:
-            return self.eager_outputs(x, aux2, aux1)
-
+        return x
 
 class Inception(nn.Module):
     def __init__(self, in_channels, ch1x1, ch3x3red, ch3x3, ch5x5red, ch5x5, pool_proj,
@@ -250,35 +207,6 @@ class Inception(nn.Module):
     def forward(self, x):
         outputs = self._forward(x)
         return torch.cat(outputs, 1)
-
-
-class InceptionAux(nn.Module):
-    def __init__(self, in_channels, num_classes, conv_block=None):
-        super(InceptionAux, self).__init__()
-        if conv_block is None:
-            conv_block = BasicConv2d
-        self.conv = conv_block(in_channels, 128, kernel_size=1)
-
-        self.fc1 = nn.Linear(2048, 1024)
-        self.fc2 = nn.Linear(1024, num_classes)
-
-    def forward(self, x):
-        # aux1: N x 512 x 14 x 14, aux2: N x 528 x 14 x 14
-        x = F.adaptive_avg_pool2d(x, (4, 4))
-        # aux1: N x 512 x 4 x 4, aux2: N x 528 x 4 x 4
-        x = self.conv(x)
-        # N x 128 x 4 x 4
-        x = torch.flatten(x, 1)
-        # N x 2048
-        x = F.relu(self.fc1(x), inplace=True)
-        # N x 1024
-        x = F.dropout(x, 0.7, training=self.training)
-        # N x 1024
-        x = self.fc2(x)
-        # N x 1000 (num_classes)
-
-        return x
-
 
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
