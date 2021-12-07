@@ -18,8 +18,14 @@ Currently, the models (connectivity) type supported by autoprune are:
 The file **basic_usage.py** shows how to use **autoprune** without any modifications for the 
 supported *l1-norm* pruning metric. 
 
+Eg: To l1-norm prune resnet_18 by 20%, run 
+`python basic_usage.py --pl 0.2 --net resnet_18 --metric l1-norm`
+
 The file **taylor_pruning.py** shows how to add custom functionality to the library without 
 modifying the library itself to implement the more complex *Taylor-first-order* pruning method.
+
+Eg: To taylor prune resnet_50 by 20%, run 
+`python basic_usage.py --pl 0.2 --net gated_resnet_50`
 
 If you require to make even more detailed changes, you can change the library itself as this is
 also open-sourced.
