@@ -26,7 +26,7 @@ def prune(pl, network, metric):
 parser= argparse.ArgumentParser()
 parser.add_argument('--pl', help='pruning level')
 parser.add_argument('--net', help='network to prune')
-parser.add_argument('--metric', help="supported pruning metrics: [l1-norm, taylor-fo]")
+parser.add_argument('--metric', help="supported pruning metrics: [l1-norm]")
 
 args= parser.parse_args()
 prune(float(args.pl), args.net, args.metric)
