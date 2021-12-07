@@ -3,7 +3,8 @@ Autoprune
 This is a wrapper repo that shows how to use the 
 [autoprune library](https://github.com/ICIdsl/autoprune) which uses PyTorch JIT
 Tracing functionality to extract an execution graph of a network to then automatically detect
-dependencies between layers in order to prune dependent layers correctly. 
+dependencies between layers in order to prune dependent layers correctly. As it uses 
+**torch.jit.trace** functionality, the models passed in must be written to be traceable.
 
 Most things you want to do can be done without editing the **autoprune** library itself, and so
 before running anything here run the command `git submodule update --init` to point to the latest
