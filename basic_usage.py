@@ -12,10 +12,10 @@ import numpy as np
 import utils 
 import autoprune
 
-def prune(pl, network):
+def prune(pl, network, metric):
     model, convsToIgnore= utils.getModelAndIgnoredConvs(network)
     prunedModel = autoprune.pruneNetwork(pl, model, network,\
-                                         rankingType= 'l1-norm',\
+                                         rankingType= metric,\
                                          ignoreKws=convsToIgnore)
     print(prunedModel)
     uModelSize= utils.modelSize(model)
@@ -26,7 +26,8 @@ def prune(pl, network):
 parser= argparse.ArgumentParser()
 parser.add_argument('--pl', help='pruning level')
 parser.add_argument('--net', help='network to prune')
+parser.add_argument('--metric', help="supported pruning metrics: [l1-norm, taylor-fo]")
 
 args= parser.parse_args()
-prune(float(args.pl), args.net)
+prune(float(args.pl), args.net, args.metric)
 
