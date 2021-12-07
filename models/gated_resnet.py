@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
-__all__ = ['gated_resnet']
+__all__ = ['gated_resnet', 'GateLayer']
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
               'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth'}
 
