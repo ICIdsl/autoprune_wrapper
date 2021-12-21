@@ -14,6 +14,9 @@ def getGatedModelAndIgnoredConvs(name):
 
 def getModelAndIgnoredConvs(name):
     print(f"Loading model {name}")
+    if name.startswith('alexnet'):
+        from models.alexnet import alexnet
+        return alexnet(num_classes=1000, pretrained=True), ['is::features.0']
     if name.startswith('resnet'):
         assert '_' in name, "Resnets need to be specified with depth as resnet_{depth}"
         from models.resnet import resnet
@@ -31,6 +34,9 @@ def getModelAndIgnoredConvs(name):
     elif name == 'googlenet':
         from models.googlenet_noaux import googlenet 
         return googlenet(pretrained=False), ['is::conv1.conv', 'is::conv2.conv', 'is::conv3.conv']
+    elif name == 'lenet':
+        from models.LeNet5 import LeNet5 
+        return LeNet5(), ['is::c1.func.0']
     else:
         raise NotImplementedError(f"Loading for network {name} not implemented.")
 
